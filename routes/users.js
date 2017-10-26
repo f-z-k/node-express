@@ -1,4 +1,6 @@
 var express = require('express');
+var cheerio = require('cheerio');
+var superagent = require('superagent');
 var router = express.Router();
 var fs = require('fs')
 var path = require('path');
@@ -16,5 +18,22 @@ router.get('/info', function(req, res, next) {
       res.jsonp(JSON.parse(data.toString()))
     });
 });
-
+router.get('/pachong', function(req, res, next) {
+  superagent.get('http://2017.talkmate.com/scdt/mtbd.html')
+  .end(function (err, sres) {
+    if (err) {
+      return next(err);
+    }
+    var $ = cheerio.load(sres.text);
+    var items = [];
+    $('.textContent a').each(function (idx, element) {
+      var $element = $(element);
+      items.push({
+        // title: $element.attr('title'),
+        href: $element.attr('href')
+      });
+    });
+    res.send(items);
+  });
+});
 module.exports = router;
